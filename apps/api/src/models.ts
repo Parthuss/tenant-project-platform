@@ -1,0 +1,10 @@
+import { Schema, model, Types } from 'mongoose';
+const id = { type: Schema.Types.ObjectId, required: true, index: true };
+export const User = model('User', new Schema({ email:{type:String,required:true,unique:true,lowercase:true}, passwordHash:{type:String,required:true}, name:{type:String,required:true} },{timestamps:true}));
+export const Tenant = model('Tenant', new Schema({ name:{type:String,required:true}, plan:{type:String,enum:['free','pro','enterprise'],default:'free'}, ownerId:id },{timestamps:true}));
+export const Membership = model('Membership', new Schema({ tenantId:id, userId:id, role:{type:String,enum:['owner','admin','member','viewer'],required:true} },{timestamps:true}).index({tenantId:1,userId:1},{unique:true}));
+export const Project = model('Project', new Schema({ tenantId:id, name:{type:String,required:true}, description:{type:String,default:''}, createdBy:id },{timestamps:true}).index({tenantId:1,_id:1}));
+export const Task = model('Task', new Schema({ tenantId:id, projectId:id, title:{type:String,required:true}, status:{type:String,enum:['todo','doing','done'],default:'todo'}, createdBy:id },{timestamps:true}).index({tenantId:1,projectId:1}));
+export const Invite = model('Invite', new Schema({ tenantId:id, email:{type:String,required:true,lowercase:true}, role:{type:String,enum:['admin','member','viewer'],required:true}, tokenHash:{type:String,required:true,unique:true}, expiresAt:{type:Date,required:true}, redeemedAt:Date, invitedBy:id },{timestamps:true}).index({expiresAt:1},{expireAfterSeconds:0}));
+export const Audit = model('Audit', new Schema({ tenantId:id,userId:id,action:{type:String,required:true},ipAddress:{type:String,required:true},changes:{type:Schema.Types.Mixed,required:true},timestamp:{type:Date,default:Date.now}},{versionKey:false}));
+export const objectId = (value:string) => Types.ObjectId.isValid(value);
